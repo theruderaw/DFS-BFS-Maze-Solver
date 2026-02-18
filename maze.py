@@ -2,13 +2,11 @@ import pygame
 import sys
 from collections import deque
 
-# -------------------- SETTINGS --------------------
 ROWS, COLS = 15, 15
 CELL_SIZE = 40
 WIDTH, HEIGHT = COLS * CELL_SIZE, ROWS * CELL_SIZE + 140
 FPS = 60
 
-# Colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GREEN = (0, 255, 0)
@@ -20,7 +18,6 @@ GREY = (200, 200, 200)
 PURPLE = (160, 32, 240)
 DARK_GREY = (100, 100, 100)
 
-# Color mapping
 color_map = {
     0: WHITE,   # empty
     1: BLACK,   # wall
@@ -31,14 +28,12 @@ color_map = {
     6: ORANGE   # user path
 }
 
-# -------------------- INIT PYGAME --------------------
 pygame.init()
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Maze Solver")
 clock = pygame.time.Clock()
 font = pygame.font.SysFont("Arial", 18)
 
-# -------------------- GRID --------------------
 grid = [[0 for _ in range(COLS)] for _ in range(ROWS)]
 start_cell = None
 end_cell = None
@@ -46,7 +41,6 @@ placing_mode = "start"  # start, end, wall, user_solve
 active_mode = "start"
 user_path = []
 
-# -------------------- BUTTONS --------------------
 buttons = [
     {"rect": pygame.Rect(10, ROWS*CELL_SIZE + 10, 80, 40), "color": GREEN, "text": "Start", "mode": "start"},
     {"rect": pygame.Rect(100, ROWS*CELL_SIZE + 10, 80, 40), "color": RED, "text": "End", "mode": "end"},
@@ -58,27 +52,23 @@ buttons = [
     {"rect": pygame.Rect(140, ROWS*CELL_SIZE + 60, 120, 40), "color": PURPLE, "text": "Submit", "mode": "submit"}
 ]
 
-# -------------------- FUNCTIONS --------------------
 def draw_grid():
     WIN.fill(WHITE)
-    # Draw grid cells
     for r in range(ROWS):
         for c in range(COLS):
             pygame.draw.rect(WIN, color_map[grid[r][c]], (c*CELL_SIZE, r*CELL_SIZE, CELL_SIZE, CELL_SIZE))
             pygame.draw.rect(WIN, GREY, (c*CELL_SIZE, r*CELL_SIZE, CELL_SIZE, CELL_SIZE), 1)
     
-    # Draw buttons
     for button in buttons:
         rect = button["rect"]
         color = button["color"]
         if button["mode"] == active_mode:
             pygame.draw.rect(WIN, color, rect)
-            pygame.draw.rect(WIN, YELLOW, rect, 4)  # highlight active button
+            pygame.draw.rect(WIN, YELLOW, rect, 4)
         else:
             pygame.draw.rect(WIN, color, rect)
             pygame.draw.rect(WIN, BLACK, rect, 2)
 
-        # Draw button text
         text_surf = font.render(button["text"], True, WHITE)
         WIN.blit(text_surf, (rect.x + 5, rect.y + 10))
 
@@ -106,13 +96,11 @@ def show_message(text, duration=1500):
     pygame.display.update()
     pygame.time.delay(duration)
 
-# -------------------- ALGORITHMS --------------------
 def run_algorithm(algo):
     if start_cell is None or end_cell is None:
         show_message("Place Start and End first!")
         return
 
-    # Reset previous visited/path
     for r in range(ROWS):
         for c in range(COLS):
             if grid[r][c] in (4,5):
@@ -189,7 +177,6 @@ def run_algorithm(algo):
         path.append(start_cell)
         path.reverse()
 
-    # Draw final path
     for r,c in path:
         if grid[r][c] not in (2,3):
             grid[r][c] = 5
@@ -197,7 +184,6 @@ def run_algorithm(algo):
         pygame.display.update()
         pygame.time.delay(30)
 
-# -------------------- USER PATH CHECK --------------------
 def check_user_path():
     global grid, start_cell, end_cell, user_path
     if start_cell is None or end_cell is None:
@@ -216,14 +202,12 @@ def check_user_path():
 
     show_message("Maze solved correctly!", duration=1200)
 
-    # Reset maze
     grid = [[0 for _ in range(COLS)] for _ in range(ROWS)]
     start_cell = None
     end_cell = None
     user_path = []
     return True
 
-# -------------------- MAIN LOOP --------------------
 running = True
 mouse_held = False
 
@@ -236,7 +220,6 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-        # ----------------- MOUSE CLICK -----------------
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse_held = True
             pos = pygame.mouse.get_pos()
@@ -248,7 +231,7 @@ while running:
 
             if clicked_button:
                 mode = clicked_button["mode"]
-                active_mode = mode  # highlight active button
+                active_mode = mode
                 if mode in ("start","end","wall","user_solve"):
                     placing_mode = mode
                     if mode=="user_solve":
@@ -288,11 +271,9 @@ while running:
                         grid[r][c] = 6
                         user_path.append((r,c))
 
-        # ----------------- MOUSE RELEASE -----------------
         if event.type == pygame.MOUSEBUTTONUP:
             mouse_held = False
 
-        # ----------------- MOUSE DRAG -----------------
         if event.type == pygame.MOUSEMOTION and mouse_held and placing_mode=="user_solve":
             cell = get_cell_from_mouse(pygame.mouse.get_pos())
             if cell:
